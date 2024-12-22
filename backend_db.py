@@ -1,10 +1,17 @@
 # Backend Server (backend.py)
 from flask import Flask, request, jsonify
+# required for 'send_from_directory
+import os
 
 app = Flask(__name__)
 
 # Mock database
 data_store = []
+
+# This is to fix the favicon file not being found by Flask - no idea why it cannot
+@app.route('/favicon.ico') 
+def favicon(): 
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/api/data', methods=['GET', 'POST'])
 def handle_data():
