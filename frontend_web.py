@@ -1,9 +1,10 @@
 # Frontend Application (frontend.py)
 # required for 'send_from_directory
 import os
+import requests
 # required for http server activites
 from flask import Flask, render_template, send_from_directory
-# import requests
+
 
 app = Flask(__name__)
 
