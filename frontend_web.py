@@ -20,7 +20,7 @@ def favicon():
 
 @app.route('/data', methods=['POST'])
 def add_data():
-    data = request.form.get('data')
+    data = requests.form.get('data')
     if data:
         response = requests.post('http://127.0.0.1:5000/api/data', json={"value": data})
         return response.json(), response.status_code
