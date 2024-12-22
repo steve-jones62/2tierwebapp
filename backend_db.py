@@ -1,25 +1,22 @@
-# Frontend Application (frontend.py)
-from flask import Flask, render_template
-import requests
+# Backend Server (backend.py)
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# Mock database
+data_store = []
 
-@app.route('/data', methods=['POST'])
-def add_data():
-    data = request.form.get('data')
-    if data:
-        response = requests.post('http://127.0.0.1:5000/api/data', json={"value": data})
-        return response.json(), response.status_code
-    return {"message": "Invalid input!"}, 400
-
-@app.route('/data', methods=['GET'])
-def get_data():
-    response = requests.get('http://127.0.0.1:5000/api/data')
-    return response.json(), response.status_code
+@app.route('/api/data', methods=['GET', 'POST'])
+def handle_data():
+    if request.method == 'POST':
+        data = request.json
+        if data:
+            data_store.append(data)
+            return jsonify({"message": "Data added successfully!", "data": data}), 201
+        else:
+            return jsonify({"message": "Invalid data!"}), 400
+    elif request.method == 'GET':
+        return jsonify(data_store), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000, host='0.0.0.0')
