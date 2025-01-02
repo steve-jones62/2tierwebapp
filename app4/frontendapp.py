@@ -1,6 +1,6 @@
 # frontend_server.py
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, send_from_directory
 import requests
 
 app = Flask(__name__)
