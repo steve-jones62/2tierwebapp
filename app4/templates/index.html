@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Server</title>
+    <script>
+        async function fetchInfo() {
+            const response = await fetch('/query-backend');
+            const data = await response.json();
+            document.getElementById('output').innerText = 
+                `Hostname: ${data.hostname}, IP Address: ${data.ip_address}`;
+        }
+    </script>
+</head>
+<body>
+    <h1>Frontend Server</h1>
+    <button onclick="fetchInfo()">Get Backend Info</button>
+    <p id="output"></p>
+</body>
+</html>
