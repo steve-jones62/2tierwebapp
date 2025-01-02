@@ -4,15 +4,15 @@ import requests
 
 app = Flask(__name__)
 
-# This is to fix the favicon file not being found by Flask - no idea why it cannot
-@app.route('/favicon.ico') 
-def favicon(): 
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
-
 # This grabs the file 'index.html' out of the TEMPLATES subdir and serves it.
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# This is to fix the favicon file not being found by Flask - no idea why it cannot
+@app.route('/favicon.ico') 
+def favicon(): 
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 @app.route('/query-backend', methods=['GET'])
