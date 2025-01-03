@@ -20,7 +20,7 @@
             const response = await fetch('/query-backend');
             const data = await response.json();
             document.getElementById('output').innerText = 
-                `Hostname: ${data.hostname},    IP Address: ${data.ip_address},    Timestamp: ${data.time_stamp}';
+                `Hostname: ${data.hostname}, IP Address: ${data.ip_address}`;
         }
     </script>
 </head>
