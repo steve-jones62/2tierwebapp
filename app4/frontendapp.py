@@ -41,7 +41,9 @@ def query_backend():
     backend_url = 'http://127.0.0.1:5001/info'
     try:
         response = requests.get(backend_url)
+        print response.json()
         return response.json()
+        
     except requests.exceptions.RequestException as e:
         return {"error": str(e)}
 
