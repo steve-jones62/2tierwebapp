@@ -52,8 +52,40 @@
       <p class="w3-opacity"><h3><i> IP: {{ ip_addr }}</i></h3></p>
       <p class="w3-opacity"><h3><i> Time: {{ time_stamp }}</i></h3></p>
     </div>
+  <!-- Connect to Container Backend Server -->
+  <div class="w3-container w3-content w3-padding-8" style="max-width:1200px; background-color:#89CFF0">
+    <h2 class="w3-wide w3-center"><a href="{{base_url}}/container" >Test Connect to Container Backend</a></h2>
+    <div class="w3-row w3-padding-8">
+      <p class="w3-wide w3-center">Test connectivity to the Container API server.</p>
+    </div>
+  </div>
 
-    <h1>Frontend Server</h1>
+  <!-- Connect to Container Backend Server -->
+  <div class="w3-container w3-content w3-padding-8" style="max-width:1200px; background-color:#89CFF0">
+<!--    <h2 class="w3-wide w3-center"><a href="{{base_url}}/container" >Test Connect to Container Backend</a></h2> -->
+        <button onclick="fetchInfo()">Get Backend Info</button>
+        <p id="output"></p>    
+    <div class="w3-row w3-padding-8">
+      <p class="w3-wide w3-center">Test connectivity to the Container API server.</p>
+    </div>
+  </div>
+
+  <div class="w3-container w3-content w3-padding-8" style="max-width:1200px; color:black; background-color:white">
+    <h2 class="w3-wide w3-center">Or</h2>
+  </div>
+
+<!-- Connect to VM DB -->
+  <div class="w3-container w3-content w3-padding-8" style="max-width:1200px; background-color:#89CFF0" id='#user'>
+    <h2 class="w3-wide w3-center"><a href="{{base_url}}/vm" >Connect to VM Backend</a></h2>
+    <div class="w3-row w3-padding-8">
+      <p class="w3-wide w3-center">Test connectivity to the VM API server/database.</p>
+    </div>
+  </div>
+
+<!-- End Page Content -->
+</div>
+
+  <h1>Frontend Server</h1>
     <button onclick="fetchInfo()">Get Backend Info</button>
     <p id="output"></p>
 
