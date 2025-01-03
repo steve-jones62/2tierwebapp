@@ -21,6 +21,11 @@ BASE_URL = "https://webby-webby.apps.ocp-hpe02.pedemo.ignw.io/" if "webby" in HO
 
 # This grabs the file 'index.html' out of the TEMPLATES subdir and serves it.
 @app.route('/')
+def root():
+    time_stamp = datetime.now()
+    return render_template('index.html', hostname=HOSTNAME, ip_addr=IP_ADDR, time_stamp=time_stamp, base_url = BASE_URL)
+
+@app.route('/index')
 def index():
     time_stamp = datetime.now()
     return render_template('index.html', hostname=HOSTNAME, ip_addr=IP_ADDR, time_stamp=time_stamp, base_url = BASE_URL)
