@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Table</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         table {
             width: 100%;
@@ -19,64 +18,78 @@
             background-color: #f2f2f2;
         }
     </style>
+    <script>
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const response = await fetch('/submit', {
+                method: 'POST',
+                body: new URLSearchParams(data),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                updateTable(result.data);
+            } else {
+                const error = await response.json();
+                alert(error.error);
+            }
+        }
+
+        function updateTable(data) {
+            const tableBody = document.querySelector('#data-table tbody');
+            tableBody.innerHTML = '';
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.Name}</td>
+                    <td>${row.Age}</td>
+                    <td>${row.City}</td>
+                    <td>${row.Count}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    </script>
 </head>
 <body>
-    <h1>Dynamic Table with Flask</h1>
-    
-    <form id="dataForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="Name" required>
-        <label for="age">Age:</label>
-        <input type="number" id="age" name="Age" required>
-        <label for="city">City:</label>
-        <input type="text" id="city" name="City" required>
+    <h1>Dynamic Data Collection</h1>
+    <form onsubmit="submitForm(event)">
+        <label>
+            Name:
+            <input type="text" name="name" required>
+        </label>
+        <label>
+            Age:
+            <input type="number" name="age" required>
+        </label>
+        <label>
+            City:
+            <input type="text" name="city" required>
+        </label>
         <button type="submit">Submit</button>
     </form>
 
     <h2>Collected Data</h2>
-    <table id="dataTable">
+    <table id="data-table">
         <thead>
             <tr>
                 <th>Name</th>
                 <th>Age</th>
                 <th>City</th>
+                <th>Count</th>
             </tr>
         </thead>
         <tbody>
-            {% for row in data %}
-            <tr>
-                <td>{{ row['Name'] }}</td>
-                <td>{{ row['Age'] }}</td>
-                <td>{{ row['City'] }}</td>
-            </tr>
-            {% endfor %}
+            <!-- Rows will be dynamically populated -->
         </tbody>
     </table>
-
-    <script>
-        $(document).ready(function () {
-            // Handle form submission
-            $("#dataForm").on("submit", function (e) {
-                e.preventDefault();
-                const formData = $(this).serialize();
-                
-                // Send data to the server
-                $.post("/submit", formData, function (data) {
-                    // Clear the table body
-                    $("#dataTable tbody").empty();
-
-                    // Rebuild the table with updated data
-                    data.forEach(function (row) {
-                        const newRow = `<tr>
-                            <td>${row.Name}</td>
-                            <td>${row.Age}</td>
-                            <td>${row.City}</td>
-                        </tr>`;
-                        $("#dataTable tbody").append(newRow);
-                    });
-                });
-            });
-        });
-    </script>
 </body>
 </html>
