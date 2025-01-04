@@ -1,38 +1,47 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, render_template, request, jsonify
+import requests
 
 app = Flask(__name__)
 
-# List to store collected data
+# Store data as a list of dictionaries
 data_list = []
 
 @app.route('/')
 def index():
-    """Render the main webpage with the form and table."""
+    """
+    Displays the main page with the input form and dynamic table.
+    """
     return render_template('index.html', data=data_list)
 
-@app.route('/submit', methods=['POST'])
-def submit():
+@app.route('/query_backend', methods=['POST'])
+def query_backend():
     """
-    Handle form submission, process the data,
-    and update the data list.
+    Queries the backend server multiple times and processes the data.
     """
-    name = request.form.get('name')
-    age = request.form.get('age')
-    city = request.form.get('city')
+    global data_list
+    backend_url = "http://localhost:5001/get_info"
+    num_queries = int(request.form.get("num_queries", 1))
 
-    if not name or not age or not city:
-        return jsonify({'error': 'All fields are required!'}), 400
+    for _ in range(num_queries):
+        try:
+            response = requests.get(backend_url)
+            if response.status_code == 200:
+                backend_data = response.json()
+                name = backend_data.get("name", "Unknown")
+                ip = backend_data.get("ip", "Unknown")
+                
+                # Check if the name is already in the list
+                for entry in data_list:
+                    if entry["name"] == name:
+                        entry["count"] += 1
+                        break
+                else:
+                    # Add new entry if name doesn't exist
+                    data_list.append({"name": name, "ip": ip, "count": 1})
+        except requests.RequestException as e:
+            print(f"Error querying backend: {e}")
+    
+    return jsonify({"status": "success", "data": data_list})
 
-    # Check if the name already exists in the data list
-    for entry in data_list:
-        if entry['Name'] == name:
-            entry['Count'] += 1
-            return jsonify({'success': True, 'data': data_list})
-
-    # Add new data to the list
-    data_list.append({'Name': name, 'Age': age, 'City': city, 'Count': 1})
-    return jsonify({'success': True, 'data': data_list})
-
-
-if __name__ == "__main__":
-    app.run(debug=True,host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

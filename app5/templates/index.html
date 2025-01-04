@@ -1,94 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Table</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <title>Frontend Server</title>
     <script>
-        async function submitForm(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
+        async function queryBackend() {
+            const numQueries = document.getElementById("numQueries").value;
 
-            const response = await fetch('/submit', {
-                method: 'POST',
-                body: new URLSearchParams(data),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
+            const response = await fetch("/query_backend", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `num_queries=${numQueries}`
             });
 
             if (response.ok) {
                 const result = await response.json();
                 updateTable(result.data);
-            } else {
-                const error = await response.json();
-                alert(error.error);
             }
         }
 
         function updateTable(data) {
-            const tableBody = document.querySelector('#data-table tbody');
-            tableBody.innerHTML = '';
+            const tableBody = document.getElementById("dataTableBody");
+            tableBody.innerHTML = ""; // Clear existing rows
 
             data.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${row.Name}</td>
-                    <td>${row.Age}</td>
-                    <td>${row.City}</td>
-                    <td>${row.Count}</td>
-                `;
-                tableBody.appendChild(tr);
+                const newRow = `<tr>
+                    <td>${row.name}</td>
+                    <td>${row.ip}</td>
+                    <td>${row.count}</td>
+                </tr>`;
+                tableBody.innerHTML += newRow;
             });
         }
     </script>
 </head>
 <body>
-    <h1>Dynamic Data Collection</h1>
-    <form onsubmit="submitForm(event)">
-        <label>
-            Name:
-            <input type="text" name="name" required>
-        </label>
-        <label>
-            Age:
-            <input type="number" name="age" required>
-        </label>
-        <label>
-            City:
-            <input type="text" name="city" required>
-        </label>
-        <button type="submit">Submit</button>
+    <h1>Frontend Server</h1>
+    <form onsubmit="event.preventDefault(); queryBackend();">
+        <label for="numQueries">Number of Queries:</label>
+        <input type="number" id="numQueries" name="num_queries" min="1" value="1">
+        <button type="submit">Query Backend</button>
     </form>
-
+    
     <h2>Collected Data</h2>
-    <table id="data-table">
+    <table border="1">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Age</th>
-                <th>City</th>
+                <th>IP Address</th>
                 <th>Count</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- Rows will be dynamically populated -->
+        <tbody id="dataTableBody">
+            <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
 </body>
