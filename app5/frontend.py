@@ -1,41 +1,4 @@
-from flask import Flask, render_template, request, jsonify
-import requests
-import threading
-import time
-
-app = Flask(__name__)
-
-# Data structure to hold the hostname and count
-data_store = {}
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/query_backend', methods=['POST'])
-def query_backend():
-    # Get the number of queries to make
-    query_count = int(request.form.get('query_count', 1))
-    backend_url = "http://127.0.0.1:5001/get_info"
-    
-    query_results = {"data": [], "iterations": []}
-
-    for i in range(query_count):
-        try:
-            # Make a request to the backend server
-            backend_response = requests.get("queryBackend")
-            if backend_response.ok:
-                Iteration_number(i)})
-                  )
-app_template.querylimit--
-
-It seems the response was cut off. Let me rewrite the correct implementation of the **Frontend Server** code.
-
----
-
 ### Full Frontend Server Code (`frontend_server.py`)
-
-```python
 from flask import Flask, render_template, request, jsonify
 import requests
 
