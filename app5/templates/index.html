@@ -2,47 +2,91 @@
 <html>
 <head>
     <title>Frontend Server</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
     <script>
-        async function queryBackend() {
-            const numQueries = document.getElementById("numQueries").value;
+        let intervalId;
 
-            const response = await fetch("/query_backend", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `num_queries=${numQueries}`
-            });
+        function startQuerying() {
+            const iterations = document.getElementById("iterations").value;
+            const iterationCount = document.getElementById("iteration-count");
+            let count = 0;
 
-            if (response.ok) {
-                const result = await response.json();
-                updateTable(result.data);
+            // Stop any previous interval
+            if (intervalId) {
+                clearInterval(intervalId);
             }
+
+            // Increment iteration count and query backend
+            intervalId = setInterval(() => {
+                count++;
+                iterationCount.textContent = count;
+
+                const formData = new FormData();
+                formData.append("iterations", 1);
+
+                fetch("/query-backend", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateTable(data.data);
+                    }
+                })
+                .catch(error => console.error("Error querying backend:", error));
+
+                if (count >= iterations) {
+                    clearInterval(intervalId);
+                }
+            }, 1000);
         }
 
         function updateTable(data) {
-            const tableBody = document.getElementById("dataTableBody");
-            tableBody.innerHTML = ""; // Clear existing rows
+            const tableBody = document.getElementById("table-body");
+            tableBody.innerHTML = ""; // Clear table
 
-            data.forEach(row => {
-                const newRow = `<tr>
-                    <td>${row.name}</td>
-                    <td>${row.ip}</td>
-                    <td>${row.count}</td>
-                </tr>`;
-                tableBody.innerHTML += newRow;
+            data.forEach((row) => {
+                const newRow = document.createElement("tr");
+
+                const nameCell = document.createElement("td");
+                nameCell.textContent = row.name;
+                newRow.appendChild(nameCell);
+
+                const ipCell = document.createElement("td");
+                ipCell.textContent = row.ip;
+                newRow.appendChild(ipCell);
+
+                const countCell = document.createElement("td");
+                countCell.textContent = row.count;
+                newRow.appendChild(countCell);
+
+                tableBody.appendChild(newRow);
             });
         }
     </script>
 </head>
 <body>
     <h1>Frontend Server</h1>
-    <form onsubmit="event.preventDefault(); queryBackend();">
-        <label for="numQueries">Number of Queries:</label>
-        <input type="number" id="numQueries" name="num_queries" min="1" value="1">
-        <button type="submit">Query Backend</button>
-    </form>
-    
-    <h2>Collected Data</h2>
-    <table border="1">
+    <label for="iterations">Number of Iterations:</label>
+    <input type="number" id="iterations" min="1" value="5">
+    <button onclick="startQuerying()">Start Querying</button>
+    <p>Iterations completed: <span id="iteration-count">0</span></p>
+
+    <table>
         <thead>
             <tr>
                 <th>Name</th>
@@ -50,8 +94,7 @@
                 <th>Count</th>
             </tr>
         </thead>
-        <tbody id="dataTableBody">
-            <!-- Dynamic rows will be added here -->
+        <tbody id="table-body">
         </tbody>
     </table>
 </body>

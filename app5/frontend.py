@@ -1,47 +1,53 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+from collections import defaultdict
 
 app = Flask(__name__)
 
-# Store data as a list of dictionaries
+# In-memory storage for data and counters
 data_list = []
+name_counter = defaultdict(int)
 
-@app.route('/')
+@app.route("/")
 def index():
     """
-    Displays the main page with the input form and dynamic table.
+    Renders the main webpage.
     """
-    return render_template('index.html', data=data_list)
+    return render_template("index.html")
 
-@app.route('/query_backend', methods=['POST'])
+@app.route("/query-backend", methods=["POST"])
 def query_backend():
     """
-    Queries the backend server multiple times and processes the data.
+    Queries the backend server and updates the data list.
     """
-    global data_list
-    backend_url = "http://localhost:5001/get_info"
-    num_queries = int(request.form.get("num_queries", 1))
+    backend_url = "http://127.0.0.1:5001/info"  # Backend server URL
+    num_iterations = int(request.form.get("iterations", 1))
 
-    for _ in range(num_queries):
+    for _ in range(num_iterations):
         try:
             response = requests.get(backend_url)
-            if response.status_code == 200:
-                backend_data = response.json()
-                name = backend_data.get("name", "Unknown")
-                ip = backend_data.get("ip", "Unknown")
-                
-                # Check if the name is already in the list
-                for entry in data_list:
-                    if entry["name"] == name:
-                        entry["count"] += 1
-                        break
-                else:
-                    # Add new entry if name doesn't exist
-                    data_list.append({"name": name, "ip": ip, "count": 1})
-        except requests.RequestException as e:
-            print(f"Error querying backend: {e}")
-    
-    return jsonify({"status": "success", "data": data_list})
+            response.raise_for_status()
+            backend_data = response.json()
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+            # Update name counter and data list
+            name = backend_data["name"]
+            name_counter[name] += 1
+            data_list.append({
+                "name": name,
+                "ip": backend_data["ip"],
+                "count": name_counter[name]
+            })
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"success": True, "data": data_list})
+
+@app.route("/get-data", methods=["GET"])
+def get_data():
+    """
+    Returns the current data list as JSON.
+    """
+    return jsonify(data_list)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)  # Running frontend on port 5000
