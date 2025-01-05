@@ -1,72 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Table</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
+    <title>Frontend Server</title>
+    <script>
+        async function queryBackend() {
+            const queryCount = document.getElementById('query_count').value;
+
+            const formData = new FormData();
+            formData.append('query_count', queryCount);
+
+            const response = await fetch('/query_backend', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                updateTable();
+            } else {
+                alert("Failed to query backend server.");
+            }
         }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
+
+        async function updateTable() {
+            const response = await fetch('/get_data');
+            if (response.ok) {
+                const data = await response.json();
+
+                const tableBody = document.getElementById('table_body');
+                tableBody.innerHTML = ""; // Clear previous table rows
+
+                data.forEach(row => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${row.query_number}</td>
+                        <td>${row.name}</td>
+                        <td>${row.ip}</td>
+                        <td>${row.count}</td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+            }
         }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    </script>
 </head>
 <body>
-    <h1>Dynamic Data Table</h1>
-    <label for="iterations">Number of Iterations:</label>
-    <input type="number" id="iterations" value="1" min="1">
-    <button onclick="startQuery()">Start Querying</button>
-    <p>Iterations Completed: <span id="counter">0</span></p>
-    <table>
+    <h1>Frontend Server</h1>
+    <form onsubmit="event.preventDefault(); queryBackend();">
+        <label for="query_count">Number of Queries:</label>
+        <input type="number" id="query_count" name="query_count" min="1" value="1">
+        <button type="submit">Query Backend</button>
+    </form>
+
+    <h2>Collected Data</h2>
+    <table border="1">
         <thead>
             <tr>
+                <th>Query #</th>
                 <th>Name</th>
                 <th>IP Address</th>
                 <th>Count</th>
             </tr>
         </thead>
-        <tbody id="table-body">
+        <tbody id="table_body">
         </tbody>
     </table>
-
-    <script>
-        let counter = 0;
-
-        function startQuery() {
-            const iterations = document.getElementById('iterations').value;
-            fetch('/start', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ iterations: iterations })
-            }).then(response => response.json())
-            .then(data => {
-                updateTable(data.data);
-                counter += parseInt(iterations);
-                document.getElementById('counter').innerText = counter;
-            }).catch(error => console.error('Error:', error));
-        }
-
-        function updateTable(data) {
-            const tableBody = document.getElementById('table-body');
-            tableBody.innerHTML = ''; // Clear the table
-            for (const name in data) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${name}</td>
-                    <td>${data[name].ip}</td>
-                    <td>${data[name].count}</td>
-                `;
-                tableBody.appendChild(row);
-            }
-        }
-    </script>
 </body>
 </html>
