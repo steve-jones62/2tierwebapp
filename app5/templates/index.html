@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Frontend Server</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table</title>
     <style>
         table {
             width: 100%;
@@ -16,76 +18,13 @@
             background-color: #f2f2f2;
         }
     </style>
-    <script>
-        let intervalId;
-
-        function startQuerying() {
-            const iterations = document.getElementById("iterations").value;
-            const iterationCount = document.getElementById("iteration-count");
-            let count = 0;
-
-            // Stop any previous interval
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
-
-            // Increment iteration count and query backend
-            intervalId = setInterval(() => {
-                count++;
-                iterationCount.textContent = count;
-
-                const formData = new FormData();
-                formData.append("iterations", 1);
-
-                fetch("/query-backend", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateTable(data.data);
-                    }
-                })
-                .catch(error => console.error("Error querying backend:", error));
-
-                if (count >= iterations) {
-                    clearInterval(intervalId);
-                }
-            }, 1000);
-        }
-
-        function updateTable(data) {
-            const tableBody = document.getElementById("table-body");
-            tableBody.innerHTML = ""; // Clear table
-
-            data.forEach((row) => {
-                const newRow = document.createElement("tr");
-
-                const nameCell = document.createElement("td");
-                nameCell.textContent = row.name;
-                newRow.appendChild(nameCell);
-
-                const ipCell = document.createElement("td");
-                ipCell.textContent = row.ip;
-                newRow.appendChild(ipCell);
-
-                const countCell = document.createElement("td");
-                countCell.textContent = row.count;
-                newRow.appendChild(countCell);
-
-                tableBody.appendChild(newRow);
-            });
-        }
-    </script>
 </head>
 <body>
-    <h1>Frontend Server</h1>
+    <h1>Dynamic Data Table</h1>
     <label for="iterations">Number of Iterations:</label>
-    <input type="number" id="iterations" min="1" value="5">
-    <button onclick="startQuerying()">Start Querying</button>
-    <p>Iterations completed: <span id="iteration-count">0</span></p>
-
+    <input type="number" id="iterations" value="1" min="1">
+    <button onclick="startQuery()">Start Querying</button>
+    <p>Iterations Completed: <span id="counter">0</span></p>
     <table>
         <thead>
             <tr>
@@ -97,5 +36,37 @@
         <tbody id="table-body">
         </tbody>
     </table>
+
+    <script>
+        let counter = 0;
+
+        function startQuery() {
+            const iterations = document.getElementById('iterations').value;
+            fetch('/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ iterations: iterations })
+            }).then(response => response.json())
+            .then(data => {
+                updateTable(data.data);
+                counter += parseInt(iterations);
+                document.getElementById('counter').innerText = counter;
+            }).catch(error => console.error('Error:', error));
+        }
+
+        function updateTable(data) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = ''; // Clear the table
+            for (const name in data) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${data[name].ip}</td>
+                    <td>${data[name].count}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+    </script>
 </body>
 </html>

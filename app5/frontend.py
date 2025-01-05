@@ -1,53 +1,51 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify, request
 import requests
-from collections import defaultdict
+from threading import Thread
+import time
 
 app = Flask(__name__)
 
-# In-memory storage for data and counters
-data_list = []
-name_counter = defaultdict(int)
+# Data storage for the table
+data_store = {}
 
-@app.route("/")
+@app.route('/')
 def index():
     """
     Renders the main webpage.
     """
-    return render_template("index.html")
+    return render_template('index.html')
 
-@app.route("/query-backend", methods=["POST"])
-def query_backend():
+@app.route('/start', methods=['POST'])
+def start_querying():
     """
-    Queries the backend server and updates the data list.
+    Starts querying the backend server.
     """
-    backend_url = "http://127.0.0.1:5001/info"  # Backend server URL
-    num_iterations = int(request.form.get("iterations", 1))
+    iterations = int(request.json.get('iterations', 1))
+    backend_url = "http://127.0.0.1:5001/info"
 
-    for _ in range(num_iterations):
+    for _ in range(iterations):
         try:
             response = requests.get(backend_url)
-            response.raise_for_status()
-            backend_data = response.json()
+            if response.status_code == 200:
+                result = response.json()
+                name = result['name']
+                ip = result['ip']
+                if name in data_store:
+                    data_store[name]['count'] += 1
+                else:
+                    data_store[name] = {'ip': ip, 'count': 1}
+        except requests.exceptions.RequestException as e:
+            print(f"Error querying backend server: {e}")
+        time.sleep(1)  # Simulate delay between queries
 
-            # Update name counter and data list
-            name = backend_data["name"]
-            name_counter[name] += 1
-            data_list.append({
-                "name": name,
-                "ip": backend_data["ip"],
-                "count": name_counter[name]
-            })
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+    return jsonify({"status": "Completed", "data": data_store})
 
-    return jsonify({"success": True, "data": data_list})
-
-@app.route("/get-data", methods=["GET"])
+@app.route('/data', methods=['GET'])
 def get_data():
     """
-    Returns the current data list as JSON.
+    Returns the collected data as JSON.
     """
-    return jsonify(data_list)
+    return jsonify(data_store)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)  # Running frontend on port 5000
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
